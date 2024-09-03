@@ -21,20 +21,21 @@
 
         <TextView
             android:id="@+id/textView"
-            android:layout_width="0dp"
+            android:layout_width="280dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Chat With Us"
             android:textColor="@android:color/black"
             android:textSize="24sp"
             android:textStyle="bold" />
-
+ss
         <ImageButton
             android:id="@+id/imageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="Action button"
-            android:src="@android:drawable/btn_star" />
+            android:background="@color/transparent"
+            android:src="@drawable/ic_setting" />
 
     </LinearLayout>
 

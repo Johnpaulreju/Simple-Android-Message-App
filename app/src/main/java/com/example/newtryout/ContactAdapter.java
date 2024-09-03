@@ -11,16 +11,19 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactViewHolder> {
 
     private List<String> contactList;
+    private List<String> contactListFull; // To store the full list for filtering
     private Context context;
 
     public ContactAdapter(Context context, List<String> contactList) {
         this.context = context;
         this.contactList = contactList;
+        this.contactListFull = new ArrayList<>(contactList); // Create a copy for filtering
     }
 
     @NonNull
@@ -53,6 +56,22 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     @Override
     public int getItemCount() {
         return contactList.size();
+    }
+
+    // Custom method to filter the contact list
+    public void filter(String text) {
+        contactList.clear();
+        if (text.isEmpty()) {
+            contactList.addAll(contactListFull);
+        } else {
+            text = text.toLowerCase();
+            for (String contact : contactListFull) {
+                if (contact.toLowerCase().contains(text)) {
+                    contactList.add(contact);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
     static class ContactViewHolder extends RecyclerView.ViewHolder {

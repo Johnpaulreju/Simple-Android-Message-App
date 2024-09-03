@@ -30,6 +30,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText emailEditText;
     private EditText passwordEditText;
     private Button registerButton;
+    private EditText mobileNumberEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +45,7 @@ public class RegisterActivity extends AppCompatActivity {
         usernameEditText = findViewById(R.id.usernameEditText);
         ageEditText = findViewById(R.id.ageEditText);
         emailEditText = findViewById(R.id.emailEditText);
+        mobileNumberEditText = findViewById(R.id.mobileNumberEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         registerButton = findViewById(R.id.registerButton);
 
@@ -52,27 +54,26 @@ public class RegisterActivity extends AppCompatActivity {
             String username = usernameEditText.getText().toString().trim();
             String ageStr = ageEditText.getText().toString().trim();
             String email = emailEditText.getText().toString().trim();
+            String mobileNumber = mobileNumberEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString().trim();
 
             if (username.isEmpty() || ageStr.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(RegisterActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             } else {
                 int age = Integer.parseInt(ageStr);
-                registerUser(username, age, email, password);
+                registerUser(username, age, email, mobileNumber,password);
             }
         });
     }
 
-    private void registerUser(String username, int age, String email, String password) {
+    private void registerUser(String username, int age, String email, String mobileNumber, String password) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // Registration success
                         Log.d(TAG, "createUserWithEmail:success");
                         FirebaseUser user = mAuth.getCurrentUser();
 
                         if (user != null) {
-                            // Update the user's profile to include the username
                             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                                     .setDisplayName(username)
                                     .build();
@@ -81,33 +82,28 @@ public class RegisterActivity extends AppCompatActivity {
                                     .addOnCompleteListener(profileTask -> {
                                         if (profileTask.isSuccessful()) {
                                             Log.d(TAG, "User profile updated.");
-
-                                            // Save additional user details in Firestore
-                                            saveUserDetails(user.getUid(), username, age, email);
+                                            saveUserDetails(user.getUid(), username, age, email, mobileNumber);
                                         }
                                     });
                         }
                     } else {
-                        // If registration fails, display a message to the user
                         Log.w(TAG, "createUserWithEmail:failure", task.getException());
                         Toast.makeText(RegisterActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    private void saveUserDetails(String userId, String username, int age, String email) {
-        // Prepare user data to save in Firestore
+    private void saveUserDetails(String userId, String username, int age, String email, String mobileNumber) {
         Map<String, Object> user = new HashMap<>();
         user.put("Username", username);
         user.put("Age", age);
         user.put("Email", email);
+        user.put("Mobile", mobileNumber);
 
-        // Add a new document with the user's ID
         db.collection("User_details").document(userId).set(user)
                 .addOnSuccessListener(aVoid -> {
                     Log.d(TAG, "User details successfully written!");
-                    // Optionally, navigate to the next activity
-                    Toast.makeText(RegisterActivity.this,"User Registered Successfully",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, "User Registered Successfully", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(RegisterActivity.this, MainActivity.class));
                     finish();
                 })

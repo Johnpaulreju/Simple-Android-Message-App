@@ -1,7 +1,9 @@
 package com.example.newtryout;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -13,12 +15,19 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ContactActivity extends AppCompatActivity {
+
+    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
 
     private ArrayAdapter<String> adapter;
     private ArrayList<String> contacts;
@@ -28,11 +37,25 @@ public class ContactActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact);
 
+        // Check if the READ_CONTACTS permission is already granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Request the permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    PERMISSIONS_REQUEST_READ_CONTACTS);
+        } else {
+            // Permission has already been granted, fetch the contacts
+            initializeContactFetching();
+        }
+    }
+
+    private void initializeContactFetching() {
         ListView contactsListView = findViewById(R.id.contactsListView);
         SearchView contactSearchView = findViewById(R.id.contactSearchView);
 
         contacts = new ArrayList<>();
-        adapter = new ContactAdapter(this, R.layout.list_item_contact, contacts);
+        adapter = new ArrayAdapter<>(this, R.layout.list_item_contact, R.id.contactNameTextView, contacts);
         contactsListView.setAdapter(adapter);
 
         // Fetch contacts
@@ -54,62 +77,35 @@ public class ContactActivity extends AppCompatActivity {
     }
 
     private void fetchContacts() {
-        Cursor cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+        Set<String> contactSet = new HashSet<>();  // Using a Set to avoid duplicates
+        Cursor cursor = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
         if (cursor != null) {
             int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
             if (nameIndex >= 0) {
                 while (cursor.moveToNext()) {
                     String name = cursor.getString(nameIndex);
-                    contacts.add(name);
+                    contactSet.add(name); // Add to set to avoid duplicates
                 }
             }
             cursor.close();
         }
+
+        contacts.addAll(contactSet);  // Convert Set back to List
         adapter.notifyDataSetChanged();
     }
 
-    private class ContactAdapter extends ArrayAdapter<String> {
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);  // Call the super method
 
-        private Context context;
-        private int resource;
-        private ArrayList<String> contacts;
-
-        public ContactAdapter(Context context, int resource, ArrayList<String> contacts) {
-            super(context, resource, contacts);
-            this.context = context;
-            this.resource = resource;
-            this.contacts = contacts;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(resource, parent, false);
+        if (requestCode == PERMISSIONS_REQUEST_READ_CONTACTS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, initialize contact fetching
+                initializeContactFetching();
+            } else {
+                // Permission denied, show a message to the user
+                Toast.makeText(this, "Permission denied to read contacts", Toast.LENGTH_SHORT).show();
             }
-
-            TextView contactNameTextView = convertView.findViewById(R.id.contactNameTextView);
-            Button inviteButton = convertView.findViewById(R.id.inviteButton);
-            Button chatButton = convertView.findViewById(R.id.chatButton);
-
-            String contactName = contacts.get(position);
-            contactNameTextView.setText(contactName);
-
-            inviteButton.setOnClickListener(v -> {
-                String inviteText = "Join me on this awesome app!";
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-                shareIntent.putExtra(Intent.EXTRA_TEXT, inviteText);
-                context.startActivity(Intent.createChooser(shareIntent, "Share via"));
-            });
-
-            chatButton.setOnClickListener(v -> {
-                Intent chatIntent = new Intent(ContactActivity.this, ChatActivity.class);
-                chatIntent.putExtra("contactName", contactName);
-                startActivity(chatIntent);
-            });
-
-            return convertView;
         }
     }
 }

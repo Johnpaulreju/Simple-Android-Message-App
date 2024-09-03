@@ -93,39 +93,90 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity {
+public class EmailActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private EditText emailEditText;
+    private EditText passwordEditText;
     private FirebaseAuth mAuth;
+    private ImageView passwordToggle;
+    private boolean isPasswordVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_email);
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
-        Button EmailButton = findViewById(R.id.EmailButton);
-        Button MobileButton = findViewById(R.id.MobileButton);
+        // Initialize the EditText, ImageView, and Buttons
+        emailEditText = findViewById(R.id.emailEditText);
+        passwordEditText = findViewById(R.id.passwordEditText);
+        passwordToggle = findViewById(R.id.passwordToggle);
+        Button signInButton = findViewById(R.id.sendLinkButton);
         TextView createAccountTextView = findViewById(R.id.createAccountTextView);
 
-        // Set an OnClickListener on the Sign-In button
-        EmailButton.setOnClickListener(v -> {
-            Toast.makeText(MainActivity.this, "Navigating to Email Page", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(MainActivity.this, EmailActivity.class));
+        // Set OnClickListener for the ImageView (eye icon)
+        passwordToggle.setOnClickListener(v -> togglePasswordVisibility());
 
-        });
-        MobileButton.setOnClickListener(v -> {
-            Toast.makeText(MainActivity.this, "Navigating to Mobile Page", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(MainActivity.this, MobileActivity.class));
+        // Set an OnClickListener on the Sign-In button
+        signInButton.setOnClickListener(v -> {
+            String email = emailEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString().trim();
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(EmailActivity.this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
+            } else {
+                signIn(email, password);
+            }
         });
 
         // Set an OnClickListener on the Create Account text to navigate to the registration page
         createAccountTextView.setOnClickListener(v -> {
-            Toast.makeText(MainActivity.this, "Navigating to Register Page", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(MainActivity.this, RegisterActivity.class));
+            Toast.makeText(EmailActivity.this, "Navigating to Register Page", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(EmailActivity.this, RegisterActivity.class));
         });
     }
+
+    private void togglePasswordVisibility() {
+        if (isPasswordVisible) {
+            // Hide password
+            passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            passwordToggle.setImageResource(R.drawable.ic_eye);  // Change back to eye icon
+            isPasswordVisible = false;
+        } else {
+            // Show password
+            passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            passwordToggle.setImageResource(R.drawable.ic_eye);  // Change to eye-off icon
+            isPasswordVisible = true;
+        }
+
+        // Move the cursor to the end of the text
+        passwordEditText.setSelection(passwordEditText.length());
+    }
+
+    private void signIn(String email, String password) {
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "signInWithEmail:success");
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            Toast.makeText(EmailActivity.this, "Authentication successful.", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(EmailActivity.this, ContactActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(EmailActivity.this, "User not found.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Log.w(TAG, "signInWithEmail:failure", task.getException());
+                        Toast.makeText(EmailActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
 }
 

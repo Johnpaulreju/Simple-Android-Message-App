@@ -24,7 +24,7 @@
         android:layout_alignParentBottom="true"
         android:background="#88000000"
         tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="-13dp" />
+        tools:layout_editor_absoluteY="-4dp" />
 
     <TextView
         android:id="@+id/welcomeTextView"
@@ -56,41 +56,80 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="32dp" />
 
-    <Button
-        android:id="@+id/EmailButton"
-        android:layout_width="295dp"
-        android:layout_height="53dp"
-        android:layout_marginTop="48dp"
-        android:backgroundTint="@color/purple_500"
-        android:padding="12dp"
-        android:text="Sign In using Email and Password"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
+    <!-- Email Input Field -->
+    <EditText
+        android:id="@+id/emailEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/rounded_edittext_background"
+        android:hint="Enter your email"
+        android:inputType="textEmailAddress"
+        android:padding="16dp"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:textColorHint="@android:color/darker_gray"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleTextView"
-        app:layout_constraintWidth_percent="0.6" />
+        app:layout_constraintTop_toBottomOf="@id/titleTextView"
+        app:layout_constraintWidth_percent="0.8" />
+
+    <!-- Password Input Field -->
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/emailEditText"
+        app:layout_constraintWidth_percent="0.8">
+
+        <EditText
+            android:id="@+id/passwordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_edittext_background"
+            android:hint="Enter your password"
+            android:inputType="textPassword"
+            android:padding="16dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="@android:color/darker_gray"
+            android:textSize="16sp" />
+
+        <ImageView
+            android:id="@+id/passwordToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="Toggle password visibility"
+            android:padding="8dp"
+            android:src="@drawable/ic_eye" />
+
+
+    </RelativeLayout>
 
     <Button
-        android:id="@+id/MobileButton"
-        android:layout_width="295dp"
-        android:layout_height="53dp"
-        android:layout_marginTop="16dp"
+        android:id="@+id/sendLinkButton"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="80dp"
         android:backgroundTint="@color/purple_500"
         android:padding="12dp"
-        android:text="Verify Using Mobile Number"
+        android:text="Sign In"
         android:textColor="@android:color/white"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/EmailButton"
+        app:layout_constraintTop_toBottomOf="@+id/relativeLayout"
         app:layout_constraintWidth_percent="0.6" />
 
     <TextView
         android:id="@+id/createAccountTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="56dp"
+        android:layout_marginTop="92dp"
         android:padding="8dp"
         android:text="Create Account"
         android:textAlignment="center"
@@ -99,8 +138,17 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/MobileButton" />
+        app:layout_constraintTop_toBottomOf="@id/sendLinkButton" />
 
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Please enter your email and password to sign in."
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/createAccountTextView"
+        android:layout_marginTop="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
